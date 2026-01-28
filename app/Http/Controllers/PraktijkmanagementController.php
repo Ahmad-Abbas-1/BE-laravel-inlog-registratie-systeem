@@ -3,9 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class PraktijkmanagementController extends Controller
 {
+    private $userModel;
+
+    public function __construct(User $userModel)
+    {
+        $this->userModel = $userModel;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -59,8 +67,31 @@ class PraktijkmanagementController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $userId)
     {
-        //
+
+        $result = $this->userModel->sp_DeleteUser($userId);
+
+        if ($result > 0) {
+            return redirect()->route('praktijkmanagement.userroles')
+                             ->with('success', 'User is succesvol verwijdert');
+        }
+
+        return redirect()->route('praktijkmanagement.userroles')
+                             ->with('error', 'User is niet verwijdert');
+    }
+
+        public function manageUserroles()
+    {
+        // Het Id dat we meegeven wordt niet meegenomen in de select. Alle andere gebruikers wel.
+        $users = $this->userModel->sp_GetAllUsers(Auth::id());
+
+        // var_dump($users);
+
+        // De return waarde voor de view
+        return view('Praktijkmanagement.userroles', [
+            'title' => 'Gebruikersrollen',
+            'users' => $users
+        ]);
     }
 }
